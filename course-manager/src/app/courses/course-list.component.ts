@@ -1,40 +1,53 @@
 import { Component, OnInit } from "@angular/core";
 import { Course } from "./course";
+import { CourseService } from "./course.service";
 
 @Component({
-    selector: 'app-course-list',
-    templateUrl: './course-list.component..html'
+    templateUrl: './course-list.component.html'
 })
+export class CourseListComponent implements OnInit { 
 
-export class CourseListComponent implements OnInit {
+    filteredCourses: Course[] = [];
 
-    courses: Course[] = [];
+    _courses: Course[] = [];
+    
+    _filterBy!: string;
 
-    ngOnInit(): void {
-        this.courses = [
+    constructor(private courseService: CourseService) { }
 
-            {
-                id: 1,
-                name: 'Angular: Forms',
-                imageUrl: '/assets/image/forms.png',
-                price: 99.99,
-                code: 'xps-8796',
-                duration: 120,
-                rating: 5,
-                releaseDate: 'November, 2, 2019'
-            },
-            {
-                id: 2,
-                name: 'Angular: HTTP',
-                imageUrl: '/assets/image/http.png',
-                price: 49.99,
-                code: 'LKL-1096',
-                duration: 80,
-                rating: 4.2,
-                releaseDate: 'September, 2, 2022'
-            }
-        ]
+    ngOnInit(): void { 
+        this.retrieveAll();
     }
 
+    retrieveAll(): void { 
+        this.courseService.retrieveAll().subscribe({
+            next: courses => {
+                this._courses = courses;
+                this.filteredCourses = this._courses;
+            },
+            error: err => console.log('Error', err) 
+        })
+    }
+
+    deleteById(courseId: number):void{
+        this.courseService.deleteById(courseId).subscribe({
+            next:() => {
+                console.log('Deletado com sucesso');
+                this.retrieveAll();
+            },
+            error: err => console.log('Erro', err)
+        })
+    }
+
+    set filter(value: string){
+        this._filterBy = value;
+
+        this.filteredCourses = this._courses.filter((course: Course) => course.name.toLocaleLowerCase().indexOf(this._filterBy.toLocaleLowerCase()) > -1);
+    }
+
+    get filter(){
+
+        return this._filterBy;
+    }
 
 }
